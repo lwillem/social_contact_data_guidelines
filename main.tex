@@ -49,7 +49,8 @@ Each social contact survey included in the repository is assigned a unique \text
 \[
 \texttt{NAMETAG} = \texttt{NAME\_YEAR\_COUNTRY[\_SUFFIX]}
 \]
-where \texttt{NAME} corresponds to the surname of the first author of the earliest publication presenting the dataset, \texttt{YEAR} to the year of that publication, and \texttt{COUNTRY} to the English name of the country in which the survey data were collected. If data were collected in multiple countries, the dataset must be split by country and assigned one \texttt{NAMETAG} per country.
+where \texttt{NAME} corresponds to the surname of the first author of the earliest publication presenting the dataset (preferably), or the surname of the lead investigator if there is no publication yet, \texttt{YEAR} to the year of that publication (preferably), or the year in which data collection started if there is no publication yet, and \texttt{COUNTRY} to the English name of the country in which the survey data were collected. The components appear in exactly this order. The \texttt{NAMETAG} is fixed when the record is created and is not changed when a publication appears later. If data were collected in multiple countries, the dataset must be split by country and assigned one \texttt{NAMETAG} per country.
+Records published before this rule existed may keep their original prefix, provided it is documented in the Zenodo description.
 The optional \texttt{SUFFIX} (survey acronym, design or wave, e.g.\ \texttt{PLATO}, \texttt{HH} or \texttt{WAVE01}) must be added when several surveys would otherwise get the same \texttt{NAME\_YEAR\_COUNTRY}, so that every \texttt{NAMETAG} is unique.
 All components are written in ASCII upper case, without diacritics, spaces or hyphens, and are separated by underscores.
 
@@ -71,7 +72,7 @@ Each identifier has a unique and well-defined role and must be used consistently
 
 \begin{itemize}
     \item \texttt{part\_id}: identifies a single unique identifier for the respondent's entry. This ID must be unique across the entire submission.
-    \item \texttt{sday\_id}: identifies the calendar date associated with a given \texttt{part\_id}, in \texttt{YYYYMMDD} format.
+    \item \texttt{sday\_id}: identifies the calendar date associated with a given \texttt{part\_id} (the date on which the diary or questionnaire was filled in), in \texttt{YYYYMMDD} format.
     \item \texttt{cnt\_id}: identifies a single contact event. Earlier datasets (e.g.\ \texttt{socialmixr::polymod}) use the spelling \texttt{cont\_id}; this column is only the key that links the contact common and extra files, so either spelling can still be read as long as it is identical in every file of a record, but new submissions must use \texttt{cnt\_id}.
     \item \texttt{hh\_id}: identifies a household. Every participant must have a non-missing \texttt{hh\_id}; if no household information was collected, use \texttt{hh\_id = part\_id} (a one-person household).
     \item \texttt{panel\_id}: identifies the same underlying individual across multiple survey rounds or waves (optional).
@@ -154,7 +155,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
 
 \section{File specifications} 
 \label{sec:file_spesifications}
-\noindent The sections below specify the required variables for each \textbf{common} data file, grouped by data entity. All variables listed for a \textbf{common} file must be present as columns in the corresponding dataset. If a variable was not collected in a given survey, the column must still be included and filled with \texttt{NA} values. Only the \textbf{common} files are subject to this requirement (the structure of the common file must not be modified); extra files may contain an arbitrary set of additional variables. 
+\noindent The sections below specify the required variables for each \textbf{common} data file, grouped by data entity. All variables listed for a \textbf{common} file must be present as columns in the corresponding dataset, except those explicitly marked as optional. If a variable was not collected in a given survey, the column must still be included and filled with \texttt{NA} values. Only the \textbf{common} files are subject to this requirement (the structure of the common file must not be modified); extra files may contain an arbitrary set of additional variables. 
 
 \begin{comment}
 \begin{figure}[h]
@@ -193,17 +194,17 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     \midrule
     \texttt{part\_id} & string / integer & unique identifier & Primary key; unique within the submission. \\
     \texttt{hh\_id} & string / integer & household identifier & Foreign key to the household common file; must not be \texttt{NA}. If no household information was collected, use \texttt{hh\_id = part\_id}. \\
-    \texttt{part\_age} &  integer & years &
-    Exact age in years (numeric). Use \texttt{NA} if not collected. \\
+    \texttt{part\_age\_exact} &  integer & years &
+    Exact age in completed years (fractional ages are allowed as numeric values, e.g.\ for infants). Use \texttt{NA} if not collected. \\
     \texttt{part\_age\_est\_min} &
     integer &
     years &
-    Lower bound of estimated age interval (numeric); otherwise \texttt{NA}. \\
+    Lower bound of estimated age interval; otherwise \texttt{NA}. \\
 
     \texttt{part\_age\_est\_max} &
     integer &
     years &
-    Upper bound of estimated age interval (numeric); otherwise \texttt{NA}. \\
+    Upper bound of estimated age interval; otherwise \texttt{NA} (also for an open-ended category, which must then be explained in the dictionary). \\
 
     \texttt{part\_gender} & string & \texttt{F}, \texttt{M}, \texttt{O} & \texttt{O} denotes a non-binary or other gender category as defined by the original survey; use \texttt{NA} if not collected. \\
     \bottomrule
@@ -213,10 +214,12 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     \noindent\textbf{Age encoding rules:} \\
     Participant age must be provided using one of the following approaches:
     \begin{itemize}
-        \item     If exact age in completed years is known, it should be recorded in \texttt{part\_age} and both \texttt{part\_age\_est\_min} and \texttt{part\_age\_est\_max} must be set to \texttt{NA}.
-        \item If age is reported as a range or estimated interval, the lower and upper bounds must be recorded in \texttt{part\_age\_est\_min} and \texttt{part\_age\_est\_max}, respectively, and \texttt{part\_age} must be set to \texttt{NA}.
+        \item     If exact age in completed years is known, it should be recorded in \texttt{part\_age\_exact} and both \texttt{part\_age\_est\_min} and \texttt{part\_age\_est\_max} must be set to \texttt{NA}.
+        \item If age is reported as a range or estimated interval, the lower and upper bounds must be recorded in \texttt{part\_age\_est\_min} and \texttt{part\_age\_est\_max}, respectively, and \texttt{part\_age\_exact} must be set to \texttt{NA}.
     \end{itemize}
     Age information must not be provided redundantly across these fields.
+
+    \noindent\textbf{Interval convention:} the lower bound of an age interval is inclusive and the upper bound is exclusive (e.g.\ the category 40--45 covers ages 40 up to, but not including, 45). The bounds are recorded as the category limits used in the questionnaire (\texttt{est\_min = 40}, \texttt{est\_max = 45}), and the dictionary file must state this convention. Note that some software (e.g.\ \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr}) treats both bounds as inclusive. The same convention applies to \texttt{cnt\_age\_est\_min} and \texttt{cnt\_age\_est\_max}.
     
     \item \textbf{Contacts common file} (file name: \texttt{NAMETAG\_contact\_common.csv})\\
     The contacts common file contains contact-level information. Each record corresponds to one contact reported by one participant on one survey day. Contacts that were imputed or aggregated (i.e.\ not individually reported by the participant) must be identified as such in the contacts extra file. Multiple location indicators may be \texttt{TRUE} for a single contact if applicable.
@@ -378,7 +381,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     \texttt{sday\_id} &
     string &
     \texttt{YYYYMMDD} &
-    Survey date identifier; a value column (not a key), which is not unique because several participants can share the same date. Use \texttt{NA} if the date is unknown. \\
+    Survey date identifier: the date on which the diary or questionnaire was filled in; a value column (not a key), which is not unique because several participants can share the same date. Use \texttt{NA} if the date is unknown. \\
     
     \texttt{day} &
     integer &
@@ -398,13 +401,20 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     \texttt{dayofweek} &
     integer &
     0--6 &
-    Day of week (0=Sunday, 1=Monday, \ldots, 6=Saturday). \\
-    
+    Day of week derived from \texttt{sday\_id} (0=Sunday, 1=Monday, \ldots, 6=Saturday); \texttt{NA} if \texttt{sday\_id} is \texttt{NA}. \\
+
+    \texttt{holiday} (optional, recommended) &
+    boolean &
+    \texttt{TRUE/FALSE} &
+    \texttt{TRUE} if \texttt{sday\_id} is a public holiday and/or a school holiday that applies to the participant's area, \texttt{FALSE} otherwise; \texttt{NA} if the date is unknown. \\
+
     \bottomrule
     \end{tabularx}
     \end{table}
-    
-    \item \textbf{Dictionary file} (file name: \texttt{NAMETAG\_dictionary.xlsx})
+
+    \noindent The columns \texttt{day}, \texttt{month}, \texttt{year} and \texttt{dayofweek} must be consistent with \texttt{sday\_id}. If a survey records a different date or day than the one on which the diary was filled in (e.g.\ an assigned diary day), that information is stored in the participant extra file. The column \texttt{holiday} is recommended but not obligatory; it may be omitted entirely. If it is provided, the dictionary file must state the calendars used (region, school year, source) and the dates counted as holiday.
+
+    \item \textbf{Dictionary file} (file name: \texttt{NAMETAG\_dictionary.xlsx} or \texttt{NAMETAG\_dictionary.xls})
 
     The dictionary file documents all variables included in the submitted datasets. It must include, for each variable:
     \begin{enumerate}
@@ -415,16 +425,19 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     \end{enumerate}
     
     \noindent The dictionary must be organised by file.
-    If a spreadsheet format is used (e.g.\ \texttt{.xlsx}), it should contain one sheet per data file.
+    The dictionary in the public record is a spreadsheet (\texttt{.xlsx} or \texttt{.xls}) following the Zenodo dictionary template, with one sheet per data file and no stray spaces in variable names. A \texttt{.csv} dictionary may be used locally but must not be part of the published record, because software such as socialmixr tries to merge every \texttt{.csv} file of a record.
 
     \item \textbf{Extra files} (file name: \texttt{NAMETAG\_xxx\_extra.csv}) \\
     The \textbf{extra} files contain survey-specific variables that are not included in the corresponding \textbf{common} file. For each data entity, the common and extra files must share the same primary key, which ensures a one-to-one match between records across data tables.
     An extra file must contain only its key column(s) and variables that are not in the common file: a column with the same name as a column of another file would be used as a merge key by software such as socialmixr.
     Time-use information is provided as additional (wide-format) columns in the participant extra file (e.g.\ \texttt{time\_use\_location\_1}, \texttt{time\_use\_distance\_1}), not as a separate file with repeated \texttt{part\_id} values: a file with repeated \texttt{part\_id} values is interpreted as longitudinal data.
+
+    \item \textbf{Public geography file} (optional; file name: \texttt{NAMETAG\_participants\_city.csv}) \\
+    Geographic information about the participants may be provided in one optional file with one row per \texttt{part\_id} (key: \texttt{part\_id} only) and the columns \texttt{part\_region} and \texttt{part\_province} (ISO 3166-2 codes). Software such as socialmixr merges this file automatically into the participant data. The file name must not contain \texttt{participant\_common} or \texttt{participants\_common}. The public file must not contain postal codes, coordinates, municipality names or any text as reported by the participant. Finer geographic information (e.g.\ municipality name or code) may only be stored in a restricted file with a different name (e.g.\ \texttt{NAMETAG\_participants\_city\_restricted.csv}) that is never part of the published record.
 \end{enumerate}
 
 \noindent \textbf{Commonly missed step: mandatory empty columns} \\
-All variables listed in Section~\ref{sec:file_spesifications} must be present as columns, even if no data were collected. In such cases, columns must be included and filled with NA, with the exception of the identifier columns (\texttt{part\_id}, \texttt{hh\_id}, \texttt{cnt\_id}), which must never be \texttt{NA}. Deleting unused columns will break compatibility with the socialmixr import standard.
+All variables listed in Section~\ref{sec:file_spesifications} must be present as columns, even if no data were collected. In such cases, columns must be included and filled with NA, with the exception of the identifier columns (\texttt{part\_id}, \texttt{hh\_id}, \texttt{cnt\_id}), which must never be \texttt{NA}. A uniform set of columns makes submissions comparable and allows them to be checked automatically. (Some software, such as socialmixr, can still read data without some of the empty columns, but removing them makes a submission non-compliant.) Columns marked as optional in the tables are exempt from this rule.
 
 \section{Longitudinal and panel studies}
 \label{sec:longitudinal}
