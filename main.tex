@@ -299,7 +299,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}, and al
     \texttt{duration\_exact} &
     numeric &
     minutes (or specify) &
-    Exact duration if reported numerically; otherwise \texttt{NA}. \\
+    Exact duration if reported numerically (between 0 and 1440 minutes); otherwise \texttt{NA}. \\
     
     \texttt{duration\_multi} &
     string / integer &
@@ -520,16 +520,16 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \textbf{Rule} & \textbf{Severity} & \textbf{Check} \\
 \midrule
 \endhead
-\texttt{R01} & error & All required files are present and each file name starts with the \texttt{NAMETAG}; several prefixes in one record are an error. A \texttt{.csv} file that is not part of the file set is an error if its name does not start with the \texttt{NAMETAG}, and a warning otherwise. A dictionary that is not an \texttt{.xlsx} or \texttt{.xls} file, or that is not named \texttt{NAMETAG\_dictionary} (e.g.\ \texttt{NAMETAG\_data\_dictionary.xlsx}), is an error; a dictionary with a deviating name is still read, so that its content is checked. \\
+\texttt{R01} & error & All required files are present and each file name starts with the \texttt{NAMETAG}; several prefixes in one record are an error; there is exactly one participant common file and one contact common file (a second file such as \texttt{NAMETAG\_participants\_common\_v2.csv} would be stacked by socialmixr). A \texttt{.csv} file that is not part of the file set is an error if its name does not start with the \texttt{NAMETAG}, and a warning otherwise. A dictionary that is not an \texttt{.xlsx} or \texttt{.xls} file, or that is not named \texttt{NAMETAG\_dictionary} (e.g.\ \texttt{NAMETAG\_data\_dictionary.xlsx}), is an error; a dictionary with a deviating name is still read, so that its content is checked. \\
 \texttt{R02} & note & The \texttt{NAMETAG} deviates from the recommended form \texttt{NAME\_YEAR[\_SUFFIX]} (note); error only if it cannot serve as a file name prefix (ASCII letters and digits, separated by underscores or hyphens). \\
 \texttt{R04} & error & CSV format: UTF-8 without byte-order mark, comma delimiter, one header row, no row names, no duplicated column names, no empty cells. \\
-\texttt{R05} & error & The common files have the specified columns and no others (optional columns may be absent; the column order is not checked). \\
+\texttt{R05} & error & The common files have the specified columns and no others (optional columns may be absent; the column order is not checked). The message for an unexpected column says what to do: rename a misspelling of a specified column (e.g.\ \texttt{cnt\_others} for \texttt{cnt\_otherplace}), remove a column that belongs to another table (e.g.\ \texttt{sday\_id} in the contact file), or move a survey-specific variable to the extra file. \\
 \texttt{R06} & error & Each extra file has the same keys as its common file and does not duplicate its columns; a column shared with another file is a warning. \\
 \texttt{R07} & error & Missing values are \texttt{NA} only, also when written as text such as \texttt{unknown} or \texttt{Null} (any case); placeholder codes such as \texttt{-99} or \texttt{999} are a warning. \\
-\texttt{R08} & error & Column types (integer, numeric, string, boolean \texttt{TRUE}/\texttt{FALSE}); the coding \texttt{0/1} (or \texttt{1/2}) for booleans is an error, with a message that names the conversion. Required columns such as \texttt{country} are never \texttt{NA}. \\
+\texttt{R08} & error & Column types (integer, numeric, string, boolean \texttt{TRUE}/\texttt{FALSE}; \texttt{hh\_size} is a count, \texttt{5+} or \texttt{nursing home}); the coding \texttt{0/1} (or \texttt{1/2}) for booleans is an error, with a message that names the conversion. Required columns such as \texttt{country} are never \texttt{NA}. \\
 \texttt{R09} & error & Allowed values (e.g.\ gender, ISO alpha-2 country code) and value ranges. A \texttt{country} written as text (several countries or a region) is a warning; the string \texttt{NA} is an error. \\
-\texttt{R10} & error & Age rules: exact age or an interval but not both, lower bound below upper bound (equal bounds give an empty interval, a warning), whole numbers within the allowed range. \\
-\texttt{R11} & warning & Plausibility of the share of missing ages. \\
+\texttt{R10} & error & Age rules: exact age or an interval but not both, lower bound below upper bound (equal bounds give an empty interval, a warning), whole numbers between 0 and 110. \\
+\texttt{R11} & warning & Plausibility of the share of missing ages: more than 5\% of the participants or more than 50\% of the contacts without any age information. \\
 \texttt{R12} & error & \texttt{sday\_id} is a valid calendar date in \texttt{YYYYMMDD}; \texttt{day}, \texttt{month} and \texttt{year} match it; a \texttt{dayofweek} that does not match it is a warning. \\
 \texttt{R13} & error & Location indicators: a contact has at least one location \texttt{TRUE}, or all six are \texttt{NA}. \\
 \texttt{R14} & error & Category codes in the data are covered by the dictionary (a code scheme that differs from the recommended one is a note). \\
@@ -537,9 +537,9 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \texttt{R16} & error & Primary keys are unique and never \texttt{NA}. \\
 \texttt{R17} & error & Foreign keys refer to existing records in the other files. \\
 \texttt{R18} & error & Every participant has a survey day row; participants without contacts are kept (note). \\
-\texttt{R19} & warning & The household size is not smaller than the number of participants of that household. \\
+\texttt{R19} & warning & A numeric household size is not smaller than the number of participants of that household. \\
 \texttt{R20}, \texttt{R41} & warning, error & Panel identifiers: the same \texttt{panel\_id} does not have several \texttt{part\_id} records on the same survey day (warning); a \texttt{part\_id} belongs to one \texttt{panel\_id} only, in every file (error). The checker also reports the number of individuals and records per individual (note). \\
-\texttt{R21} & warning & Plausibility of the number of contacts: participants with more than 100 contacts, or a large share of participants without contacts (check for aggregated or imputed contacts). \\
+\texttt{R21} & warning & Plausibility of the number of contacts: participants with more than 100 contacts, or more than 30\% of the participants without contacts (check for aggregated or imputed contacts). \\
 \texttt{R22} & error & Smoke test: the record can be loaded with socialmixr and a contact matrix can be computed. \\
 \texttt{R23} & warning & If the contact extra file has the column \texttt{cnt\_imputed} (imputed or aggregated contacts), it is \texttt{TRUE}, \texttt{FALSE} or \texttt{NA}. \\
 \texttt{R26} & error, warning & No column names that look like personal identifiers: first or last name, e-mail, phone number, birth date, passport, IBAN and the like are an error (they must not be in a public record); the word \texttt{name} alone (e.g.\ \texttt{school\_name}) is a warning. \\
@@ -550,7 +550,7 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \texttt{R38} & error & An identifier has the same type (integer or string) in every file. \\
 \texttt{R39} & error & Further values that silently change results, e.g.\ \texttt{diary\_weight} is numeric without \texttt{NA}. \\
 \texttt{R40} & error & One spelling of the contact identifier (\texttt{cnt\_id}, or the legacy \texttt{cont\_id}) in all files of a record. \\
-\texttt{R42} & warning & Household size above 20. \\
+\texttt{R42} & warning & A numeric household size above 20. \\
 \texttt{R43} & note & Columns that are \texttt{NA} for all records; a warning if all six location indicators are \texttt{NA}. \\
 \texttt{R44} & warning & More than 5\% of the participants have no survey date (\texttt{sday\_id} is \texttt{NA}). \\
 \texttt{R45} & warning & One \texttt{panel\_id} has a changing \texttt{part\_gender}, or an exact age that decreases or changes by more than the time between the survey dates. \\
@@ -561,7 +561,6 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 
 \noindent \textbf{Manual review.} The checker lists the following points for review by a person; they concern the content of the dictionary and of the Zenodo record rather than the data files:
 \begin{itemize}
-    \item the \texttt{NAMETAG} is built from the first author, the year and, where needed, a suffix, and is unique per survey implementation;
     \item locations beyond the six common ones (e.g.\ kindergarten, daycare, family visit) are mapped as documented and kept in the contact extra file;
     \item the age-interval convention (lower bound inclusive, upper bound exclusive) is documented in the dictionary;
     \item \texttt{sday\_id} is the date on which the diary or questionnaire was filled in;
