@@ -90,7 +90,7 @@ All data files must be plain text files with the following properties:
     \item fields are quoted only when necessary (e.g.\ when they contain a comma, a quote or a line break);
     \item line endings may be LF or CRLF.
 \end{itemize}
-\noindent \textbf{Boolean variables} are coded \texttt{TRUE} or \texttt{FALSE} (upper case, unquoted); missing values are \texttt{NA}. Other codings (\texttt{0/1}, \texttt{1/2}, \texttt{Y/N}, \texttt{T/F}, yes/no) are not allowed. Existing datasets that use \texttt{0/1} can still be read by the \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr} package, but they do not follow this format and should be converted when they are updated.
+\noindent \textbf{Boolean variables} are coded \texttt{TRUE} or \texttt{FALSE} (upper case, unquoted); missing values are \texttt{NA}. Other codings (\texttt{0/1}, \texttt{1/2}, \texttt{Y/N}, \texttt{T/F}, yes/no) are not allowed and are reported as an error by the checker. Existing datasets that use \texttt{0/1} can still be read by the \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr} package, but they do not follow this format and must be converted before they are submitted again.
 All columns typed as \emph{boolean} in the tables below follow this rule.
 
 \noindent \textbf{Dates} are always written in \texttt{YYYYMMDD} format in every file of the record; no other date format (\texttt{YYYY-MM-DD}, \texttt{DD/MM/YYYY}, spreadsheet serial numbers) is allowed. Missing dates are \texttt{NA}. 
@@ -349,7 +349,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}, and al
         \texttt{country} &
         string &
         ISO alpha-2 code &
-        Country in which the survey data were collected, encoded using ISO 3166-1 alpha-2 (e.g.\ \texttt{BE} for Belgium, and \texttt{FR} for France). Namibia may be written as the ISO alpha-3 code \texttt{NAM}, because its alpha-2 code \texttt{NA} is read as a missing value by much software; if \texttt{NA} is used, it must be quoted and software must be told explicitly which token denotes a missing value (e.g.\ \texttt{na = "NA"} when writing with \texttt{data.table::fwrite()}). \\
+        Country in which the survey data were collected, encoded using ISO 3166-1 alpha-2 (e.g.\ \texttt{BE} for Belgium, and \texttt{FR} for France). This information is required and must never be \texttt{NA}. Namibia is written as the ISO alpha-3 code \texttt{NAM}, because its alpha-2 code \texttt{NA} is read as a missing value by much software; the string \texttt{NA} is not accepted as a country. If the survey covers several countries, or a region that is not a country, write this as text instead of a code (e.g.\ \texttt{multiple countries}, or the name of the region) and describe it in the dictionary; the checker reports such text as a warning. \\
 
         \texttt{hh\_size} &
         integer &
@@ -502,7 +502,7 @@ The rules in this document are implemented in the R package \texttt{contactdataf
 \noindent The severity of a finding indicates how it must be handled:
 \begin{itemize}
     \item \textbf{error}: the record breaks a requirement of this document, or software such as \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr} would read it incorrectly or not at all; errors must be fixed before submission;
-    \item \textbf{warning}: a recommended convention is not followed, or a value looks implausible (e.g.\ the legacy \texttt{0/1} coding of booleans); warnings should be reviewed and are accepted for a documented reason;
+    \item \textbf{warning}: a recommended convention is not followed, or a value looks implausible (e.g.\ a country written as text, or a household of more than 20 persons); warnings should be reviewed and are accepted for a documented reason. A record with warnings but without errors can be submitted;
     \item \textbf{note}: information or a matter of style, for example a \texttt{NAMETAG} that does not follow the recommended form;
     \item \textbf{manual}: a point that cannot be checked automatically and must be reviewed by a person (see below).
 \end{itemize}
@@ -523,8 +523,8 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \texttt{R05} & error & The common files have the specified columns and no others (optional columns may be absent; the column order is not checked). \\
 \texttt{R06} & error & Each extra file has the same keys as its common file and does not duplicate its columns; a column shared with another file is a warning. \\
 \texttt{R07} & error & Missing values are \texttt{NA} only, also when written as text such as \texttt{unknown} or \texttt{Null} (any case); placeholder codes such as \texttt{-99} or \texttt{999} are a warning. \\
-\texttt{R08} & error & Column types (integer, numeric, string, boolean \texttt{TRUE}/\texttt{FALSE}); the coding \texttt{0/1} for booleans is a warning. \\
-\texttt{R09} & error & Allowed values (e.g.\ gender, ISO alpha-2 country code) and value ranges. \\
+\texttt{R08} & error & Column types (integer, numeric, string, boolean \texttt{TRUE}/\texttt{FALSE}); the coding \texttt{0/1} (or \texttt{1/2}) for booleans is an error, with a message that names the conversion. Required columns such as \texttt{country} are never \texttt{NA}. \\
+\texttt{R09} & error & Allowed values (e.g.\ gender, ISO alpha-2 country code) and value ranges. A \texttt{country} written as text (several countries or a region) is a warning; the string \texttt{NA} is an error. \\
 \texttt{R10} & error & Age rules: exact age or an interval but not both, lower bound below upper bound (equal bounds give an empty interval, a warning), whole numbers within the allowed range. \\
 \texttt{R11} & warning & Plausibility of the share of missing ages. \\
 \texttt{R12} & error & \texttt{sday\_id} is a valid calendar date in \texttt{YYYYMMDD}; \texttt{day}, \texttt{month} and \texttt{year} match it; a \texttt{dayofweek} that does not match it is a warning. \\
@@ -539,8 +539,8 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \texttt{R21} & warning & Plausibility of the number of contacts: participants with more than 100 contacts, or a large share of participants without contacts (check for aggregated or imputed contacts). \\
 \texttt{R22} & error & Smoke test: the record can be loaded with socialmixr and a contact matrix can be computed. \\
 \texttt{R23} & warning & If the contact extra file has the column \texttt{cnt\_imputed} (imputed or aggregated contacts), it is \texttt{TRUE}, \texttt{FALSE} or \texttt{NA}. \\
-\texttt{R26} & warning & No column names that look like personal identifiers (e.g.\ names, e-mail, phone). \\
-\texttt{R27} & error & Privacy: the public files contain no postal codes, addresses, coordinates, municipality or NIS codes; only region and province are allowed. \\
+\texttt{R26} & error, warning & No column names that look like personal identifiers: first or last name, e-mail, phone number, birth date, passport, IBAN and the like are an error (they must not be in a public record); the word \texttt{name} alone (e.g.\ \texttt{school\_name}) is a warning. \\
+\texttt{R27} & error & Privacy: the public files contain no postal codes, addresses, coordinates, municipality or NIS codes; only region and province are allowed. Values that look like postal codes or coordinates in other columns are a warning. \\
 \texttt{R34} & error & No \texttt{.csv} files that socialmixr would merge unintentionally, and at most one \texttt{.json} file. \\
 \texttt{R35} & error & Merge simulation: loading the record in socialmixr keeps the number of rows and gives no merge warnings. \\
 \texttt{R36} & error & Zenodo record metadata (optional, needs a network connection). \\
@@ -565,23 +565,47 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
     \item proxy-reported participants and imputed contacts are coded as documented;
     \item the definition of \texttt{holiday} (public and/or school holiday, region or community, calendar source) is documented;
     \item the dictionary states what a wave is and how \texttt{wave} relates to \texttt{panel\_id};
-    \item the Zenodo title, description, dates and geographic scope are consistent with the data files.
+    \item the Zenodo record follows the conventions of Section~\ref{sec:zenodo} (creators, title, publication date, version, references, open files) and its description, dates and geographic scope are consistent with the data files; \texttt{contactsurveys::get\_citation()} returns a correct citation.
 \end{itemize}
 
 \section{Zenodo submission and metadata requirements}
+\label{sec:zenodo}
 
 SOCRATES-formatted datasets are disseminated via \href{https://zenodo.org}{Zenodo} to support long-term archiving, versioning, and reuse. 
 To ensure datasets hosted on \href{https://socialcontactdata.org}{socialcontactdata.org} are discoverable and interoperable, contributors must adhere to the following Zenodo metadata requirements. \\ 
 
-\noindent \textbf{Versioning} \\
-Each dataset release must specify a clear version number using a numeric scheme (e.g.\ \texttt{v1.0}, \texttt{v1.1}). 
-New versions must be created for any change affecting data content, structure, or documentation. \\
+\noindent The Zenodo record is also the source of the citation of the dataset. The R package \href{https://github.com/epiforecasts/contactsurveys}{contactsurveys} downloads a record by its DOI; its function \texttt{get\_citation()} builds the citation (BibTeX, APA and other styles) from the metadata of the record, and \texttt{download\_survey()} stores the title, the family names of the creators, the year, the version and the references in a file \texttt{NAMETAG\_reference.json} next to the data, from which \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr} reports the source of the survey. Incomplete metadata therefore give an incomplete citation. The conventions below follow what these functions read.
 
-\noindent \textbf{Community and keywords} \\
-All submissions must be associated with the \textit{Social Contact Data} Zenodo community.
-Contributors are encouraged to include keywords such as \texttt{social contacts}, \texttt{contact data}, and \texttt{contact matrix} to facilitate discovery. \\
+\medskip
+\noindent \textbf{One record per survey, one DOI per version} \\
+Each dataset corresponds to a single survey implementation, with its own Zenodo record, resource type \textit{Dataset} and a unique \texttt{NAMETAG}. If multiple surveys are conducted within the same country and year, they must be submitted as separate records (using the optional \texttt{SUFFIX}, see Section~\ref{sec:nametag}). New releases of the same survey are new versions of the same record (the Zenodo button \textit{New version}), so that all versions share one concept DOI; \texttt{get\_citation()} accepts the DOI of a version as well as the concept DOI (the latter refers to the latest version). The record must be published (not a draft) and its files must be open access, because they are downloaded without authentication.
 
-\noindent Note that each dataset corresponds to a single survey implementation. If multiple surveys are conducted within the same country and year, they must be submitted as separate datasets, each with its own Zenodo record and a unique \texttt{NAMETAG} (using the optional \texttt{SUFFIX}, see Section~\ref{sec:nametag}). For surveys that cover only part of a country (e.g.\ a region), the region should be stated in the Zenodo description. The information provided in the Zenodo (title, description, dates, and geographic scope) must be consistent with the contents of the submitted data files. 
+\medskip
+\noindent \textbf{Required fields}
+\begin{itemize}
+    \item \textbf{Title}: names the survey, the country (or region) and the period of data collection, e.g.\ \textit{Social contact survey in Belgium, 2010--2011}. The title is printed as such in the citation; it does not contain the version number or the \texttt{NAMETAG}.
+    \item \textbf{Creators}: every author is a separate person entry with family name and given name(s) (Zenodo: \textit{Family name, Given names}); affiliation and ORCID are recommended. Organisations are not entered as creator, because the citation and the reference file use the family names of the persons. The order of the creators is the order of the citation; the family name of the first creator is the \texttt{NAME} of the \texttt{NAMETAG} (Section~\ref{sec:nametag}).
+    \item \textbf{Publication date}: set when the record is first published; its year is the year in the citation. It can differ from the year in the \texttt{NAMETAG}, which is fixed when the record is created.
+    \item \textbf{Version}: a numeric scheme such as \texttt{v1.0}, \texttt{v1.1}. A new version is created for any change affecting data content, structure, or documentation. The version is shown in the citation as \textit{Version v1.0}.
+    \item \textbf{Description}: the survey design, the sample, the period and the geographic scope; for surveys that cover only part of a country (e.g.\ a region), the region is stated here. The title, description, dates and geographic scope must be consistent with the contents of the submitted data files, including the \texttt{country} column.
+    \item \textbf{Community}: all submissions are associated with the \textit{Social Contact Data} Zenodo community.
+    \item \textbf{License}: an open license is stated (CC BY 4.0 is recommended).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Recommended fields}
+\begin{itemize}
+    \item \textbf{References}: the publication(s) that describe the survey and should be cited with the data, one complete reference per entry in the Zenodo field \textit{References}; they are copied into the reference file.
+    \item \textbf{Keywords}: such as \texttt{social contacts}, \texttt{contact data}, and \texttt{contact matrix}, to facilitate discovery.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Data protection} \\
+The public record contains no direct personal identifiers and no postal codes, addresses, coordinates, municipality or NIS codes (Section~\ref{sec:checker}, rules \texttt{R26} and \texttt{R27}). A restricted geography file is kept outside the Zenodo record.
+
+\medskip
+\noindent \textbf{Verification before submission} \\
+When the record is published, run \texttt{contactsurveys::get\_citation()} with the DOI of the record and check that the authors, the title, the year, the version and the DOI are as intended, and that \texttt{contactsurveys::download\_survey()} retrieves all files of the record. An automatic check of these metadata is planned in the checker (rule \texttt{R36}); until then the point is on the manual review list (Section~\ref{sec:checker}).
 
 \section{Submission workflow}
 \label{sec:workflow}
