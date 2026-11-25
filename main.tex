@@ -356,7 +356,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}, and al
     \end{table}
 
     \item \textbf{Survey day file} (file name: \texttt{NAMETAG\_sday.csv})\\
-    The survey day file contains metadata describing the calendar date associated with each \texttt{part\_id}. 
+    The survey day file contains metadata describing the calendar date associated with each \texttt{part\_id}. It has one row per participant record and no extra file: survey-specific variables about the survey day (e.g.\ a study day number or a weekend indicator) are provided in the participant extra file, which has the same key (\texttt{part\_id}). The optional columns \texttt{holiday} and \texttt{wave} are the only columns beyond the date columns. 
 
     \begin{table}[H]
     \centering
