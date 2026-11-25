@@ -347,9 +347,9 @@ The name of each file must start with the corresponding \texttt{NAMETAG}, and al
         Country in which the survey data were collected, encoded using ISO 3166-1 alpha-2 (e.g.\ \texttt{BE} for Belgium, and \texttt{FR} for France). This information is required and must never be \texttt{NA}. Namibia is written as the ISO alpha-3 code \texttt{NAM}, because its alpha-2 code \texttt{NA} is read as a missing value by much software; the string \texttt{NA} is not accepted as a country. If the survey covers several countries, or a region that is not a country, write this as text instead of a code (e.g.\ \texttt{multiple countries}, or the name of the region) and describe it in the dictionary; the checker reports such text as a warning. \\
 
         \texttt{hh\_size} &
-        integer &
-        count &
-        Household size; use \texttt{NA} if not collected (also when \texttt{hh\_id = part\_id} was used because no household information exists). Values above 20 are reported as implausible; check them for data entry errors and keep institutional households out of this column. \\
+        integer / string &
+        count or category &
+        Household size, including the participant; use \texttt{NA} if not collected (also when \texttt{hh\_id = part\_id} was used because no household information exists). If the household size was collected in categories, an open-ended category is written as \texttt{5+} (five or more) and an institutional household as \texttt{nursing home}; no other text is accepted, and the dictionary states the categories used (data type \texttt{string}). Numeric values above 20 are reported as implausible; check them for data entry errors. \\
         
         \bottomrule
         \end{tabularx}
@@ -422,13 +422,21 @@ The name of each file must start with the corresponding \texttt{NAMETAG}, and al
         \item the allowed values and their meaning (for categorical variables).
     \end{enumerate}
     
-    \noindent The dictionary must be organised by file.
-    The dictionary in the public record is a spreadsheet (\texttt{.xlsx} or \texttt{.xls}) following the Zenodo dictionary template, with one sheet per data file and no stray spaces in variable names. A \texttt{.csv} dictionary may be used locally but must not be part of the published record, because software such as socialmixr tries to merge every \texttt{.csv} file of a record.
+    \noindent The dictionary is organised by file and follows the Zenodo dictionary template:
+    \begin{itemize}
+        \item The public dictionary is a spreadsheet (\texttt{.xlsx} or \texttt{.xls}) with one sheet per data file. The sheet name is the file name without the NAMETAG and without \texttt{.csv} (\texttt{participant\_common}, \texttt{contact\_common}, \texttt{hh\_common}, \texttt{sday}, \texttt{participant\_extra}, \ldots). Explanations, contacts or notes about the study go on a separate sheet called \texttt{INDEX} or \texttt{README}, not above the table.
+        \item Each sheet is a plain table. Its header is in the first row and has exactly the four column names \texttt{variable}, \texttt{description}, \texttt{type} and \texttt{values}; further columns (e.g.\ unit or question text) may follow. There is one row per variable, in the order of the data file.
+        \item \texttt{variable} is the column name exactly as in the CSV header, without extra spaces.
+        \item \texttt{type} is one of \texttt{integer}, \texttt{numeric}, \texttt{string}, \texttt{boolean}, \texttt{date} or \texttt{code}.
+        \item \texttt{values} gives, for a variable with a fixed set of options, one entry per option written as \texttt{code = label}, one per line (or separated by semicolons), e.g.\ \texttt{1 = (almost) daily; 2 = about once a week; 3 = about once a month; 4 = less often; 5 = first time}. For numbers it gives the range (e.g.\ \texttt{0--110}), for free text the words \texttt{free text}, and it states what \texttt{NA} means for the variable when this is not obvious. Every code that occurs in the data must be listed. For \texttt{dayofweek} the coding is \texttt{0 = Sunday, 1 = Monday, \ldots, 6 = Saturday}.
+    \end{itemize}
+    A \texttt{.csv} dictionary may be used locally but must not be part of the published record, because software such as socialmixr tries to merge every \texttt{.csv} file of a record. The checker also reads dictionaries with a title block above the header or with other column names (e.g.\ \textit{Variable label}), but reports this as a note.
 
     \noindent\textit{Note:} the spreadsheet format is chosen for the current version because it is readable by people and by software. Other formats that are both human- and machine-readable may be considered in future versions of these guidelines.
 
     \item \textbf{Extra files} (file name: \texttt{NAMETAG\_xxx\_extra.csv}) \\
     The \textbf{extra} files contain survey-specific variables that are not included in the corresponding \textbf{common} file. For each data entity, the common and extra files must share the same primary key, which ensures a one-to-one match between records across data tables.
+    The columns of the extra files are not specified by these guidelines, because they depend on the study; Appendix~\ref{app:extra} lists the columns that existing records use, with suggested names and formats.
     An extra file must contain only its key column(s) and variables that are not in the common file: a column with the same name as a column of another file would be used as a merge key by software such as socialmixr.
     Time-use information is provided as additional (wide-format) columns in the participant extra file (e.g.\ \texttt{time\_use\_location\_1}, \texttt{time\_use\_distance\_1}), not as a separate file with repeated \texttt{part\_id} values: a file with repeated \texttt{part\_id} values is interpreted as longitudinal data.
 
@@ -525,7 +533,7 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \texttt{R12} & error & \texttt{sday\_id} is a valid calendar date in \texttt{YYYYMMDD}; \texttt{day}, \texttt{month} and \texttt{year} match it; a \texttt{dayofweek} that does not match it is a warning. \\
 \texttt{R13} & error & Location indicators: a contact has at least one location \texttt{TRUE}, or all six are \texttt{NA}. \\
 \texttt{R14} & error & Category codes in the data are covered by the dictionary (a code scheme that differs from the recommended one is a note). \\
-\texttt{R15} & error & The dictionary documents every column with the required fields (a documented column that does not exist is a warning). \\
+\texttt{R15} & error & The dictionary documents every column with the required fields (a documented column that does not exist is a warning; a header that is not in row 1 with the guideline column names, or a type outside the recommended list, is a note). \\
 \texttt{R16} & error & Primary keys are unique and never \texttt{NA}. \\
 \texttt{R17} & error & Foreign keys refer to existing records in the other files. \\
 \texttt{R18} & error & Every participant has a survey day row; participants without contacts are kept (note). \\
@@ -619,5 +627,58 @@ Questions regarding data formatting or submission should be directed to:
 \begin{center}
 \texttt{[socialcontactdata@gmail.com]}
 \end{center}
+
+\appendix
+\section{Optional columns in the extra files}
+\label{app:extra}
+
+The extra files (Section~\ref{sec:file_spesifications}) hold survey-specific variables, so the guidelines do not prescribe their columns and the checker does not test them, apart from the key column and the rules that apply to all files (e.g.\ a column name must not occur in another file). This appendix lists the columns that existing records use, as a starting point for new records: where a concept occurs in several records, use the suggested name and format so that records stay comparable, and describe every column in the dictionary. Names follow the prefixes \texttt{part\_\allowbreak{}}, \texttt{hh\_\allowbreak{}} and \texttt{cnt\_\allowbreak{}} of the common files, are written in lower case and contain only letters, digits and underscores. A name in angle brackets (e.g.\ \texttt{<k>}) stands for a number or a label. Variables that are defined in a common file, such as \texttt{country}, \texttt{hh\_\allowbreak{}size}, \texttt{holiday} or \texttt{wave}, do not belong in an extra file: they were found there in some records and must be moved.
+
+\noindent The table is based on the dictionaries of 50 records (the Zenodo community and test records, 2025--2026); the column N gives the number of these records with a column of this kind. It illustrates what is common and is not a list of required or recommended variables.
+
+{\footnotesize
+\begin{longtable}{p{2.0cm} p{3.2cm} p{1.6cm} p{5.9cm} p{0.8cm}}
+\toprule
+\textbf{Table} & \textbf{Column} & \textbf{Format} & \textbf{Explanation and suggested convention} & \textbf{N} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Table} & \textbf{Column} & \textbf{Format} & \textbf{Explanation and suggested convention} & \textbf{N} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+    \texttt{participant\_\allowbreak{}extra} & \texttt{part\_\allowbreak{}id} & id & Key column, identical to \texttt{part\_\allowbreak{}id} in the participant common file; the only identifier in this file. & 50 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{panel\_\allowbreak{}id} & id & Same value for the same person in every wave of a panel (Section~\ref{sec:longitudinal}). & 25 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{part\_\allowbreak{}education} & code & Highest completed education level. Suggested: ISCED 2011 levels 0--8, otherwise own categories with the full code list in the dictionary. Also seen as \texttt{education\_\allowbreak{}level}, \texttt{educational\_\allowbreak{}attainment}. & 14 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{part\_\allowbreak{}occupation} & code & Main occupational status (e.g.\ 1 working, 2 retired, 3 at home, 4 unemployed, 5 in education, 6 other). Also seen as \texttt{part\_\allowbreak{}job}, \texttt{activity\_\allowbreak{}status}; a detailed variant is \texttt{part\_\allowbreak{}occupation\_\allowbreak{}detail}. & 18 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{part\_\allowbreak{}nationality} & string / code & Nationality or country of birth (\texttt{part\_\allowbreak{}country\_\allowbreak{}of\_\allowbreak{}birth}) as ISO 3166-1 alpha-2 code; \texttt{part\_\allowbreak{}ethnicity} with own categories described in the dictionary. & 10 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{diary\_\allowbreak{}type} & code & Who filled in the diary, e.g.\ 1 adult for themselves, 2 teenager or older child for themselves, 3 parent on behalf of a child. Seen as \texttt{type}; the longer name is clearer. & 6 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{mode\_\allowbreak{}survey} & code & Mode of data collection (e.g.\ paper, online, telephone interview). & 2 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{diary\_\allowbreak{}how} & code & When the diary was filled in (during the day, in the evening, other). & 3 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{diary\_\allowbreak{}missed\_\allowbreak{}*}, \texttt{num\_\allowbreak{}left\_\allowbreak{}out}, \texttt{include\_\allowbreak{}all\_\allowbreak{}contacts}, \texttt{problems} & integer / boolean / string & Completeness of the diary: number of contacts the participant says they missed (total \texttt{diary\_\allowbreak{}missed\_\allowbreak{}unsp}, or split \texttt{diary\_\allowbreak{}missed\_\allowbreak{}skin} and \texttt{diary\_\allowbreak{}missed\_\allowbreak{}noskin}), estimated number left out, \texttt{TRUE} if all contacts were reported, free text on problems. & 6 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{multiple\_\allowbreak{}contacts\_\allowbreak{}<age>\_\allowbreak{}<setting>} & integer & Aggregated (``group'') contacts that were not reported one by one: number of contacts with children (\texttt{child}, 0--17), adults (\texttt{adult}, 18--64) and older adults (\texttt{older\_\allowbreak{}adult}, 65+) in \texttt{school}, \texttt{work} or \texttt{other} settings; the suffix \texttt{\_\allowbreak{}phys} gives the number involving physical contact. The age groups are stated in the dictionary. & 21 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{multiple\_\allowbreak{}contacts\_\allowbreak{}<setting>\_\allowbreak{}duration}, \texttt{...\_\allowbreak{}precautions} & code & Average duration, and use of precautions (distance, face mask), of the aggregated contacts per setting. & 20 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{work\_\allowbreak{}contacts}, \texttt{work\_\allowbreak{}contacts\_\allowbreak{}nr} & boolean / integer & Whether the participant had many work contacts, and how many; related: \texttt{class\_\allowbreak{}size} (persons sharing a classroom), \texttt{part\_\allowbreak{}attend\_\allowbreak{}work\_\allowbreak{}week}. & 8 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{child\_\allowbreak{}care}, \texttt{child\_\allowbreak{}relationship}, \texttt{part\_\allowbreak{}school\_\allowbreak{}year} & code / string & Proxy and child participants: day care or school attendance, relationship of the person filling in to the child, school year; \texttt{child\_\allowbreak{}nationality}. & 6 \\
+    \texttt{participant\_\allowbreak{}extra} & health items & boolean / numeric / code & Optional health information, one column per item: \texttt{part\_\allowbreak{}height} (cm), \texttt{part\_\allowbreak{}weight} (kg), \texttt{part\_\allowbreak{}bmi}, \texttt{medical\_\allowbreak{}risk} and \texttt{chronic\_\allowbreak{}status} (\texttt{TRUE}/\texttt{FALSE}), \texttt{flu\_\allowbreak{}vaccine}, \texttt{covid\_\allowbreak{}vaccine}, \texttt{part\_\allowbreak{}covid\_\allowbreak{}test}, \texttt{ili\_\allowbreak{}status}, and questionnaire items such as \texttt{eq5d\_\allowbreak{}mob} or \texttt{gfi\_\allowbreak{}*} with the instrument named in the dictionary. & 7 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{diary\_\allowbreak{}weight} & numeric & Sampling or post-stratification weight; no \texttt{NA} allowed (rule R39), so leave the column out if there is no weight. Seen as \texttt{weight}, \texttt{sample\_\allowbreak{}weight}. & 3 \\
+    \texttt{participant\_\allowbreak{}extra} & \texttt{time\_\allowbreak{}use\_\allowbreak{}location\_\allowbreak{}<k>}, \texttt{time\_\allowbreak{}use\_\allowbreak{}distance\_\allowbreak{}<k>} & code / numeric & Time-use information in wide format, one column per period \texttt{k} (see Section~\ref{sec:file_spesifications}). & -- \\
+    \midrule
+    \texttt{hh\_\allowbreak{}extra} & \texttt{hh\_\allowbreak{}id} & id & Key column, identical to \texttt{hh\_\allowbreak{}id} in the household common file. & 19 \\
+    \texttt{hh\_\allowbreak{}extra} & \texttt{hh\_\allowbreak{}age\_\allowbreak{}<k>} & integer & Age in years of the \texttt{k}-th household member other than the participant, \texttt{k} = 1, 2, \ldots, up to 20 in existing records; \texttt{NA} when the household has fewer members. & 10 \\
+    \texttt{hh\_\allowbreak{}extra} & \texttt{hh\_\allowbreak{}gender\_\allowbreak{}<k>}, \texttt{hh\_\allowbreak{}relationship\_\allowbreak{}<k>} & code & Gender (\texttt{F}, \texttt{M}, \texttt{O}) and relationship to the participant of household member \texttt{k}, with the same numbering as \texttt{hh\_\allowbreak{}age\_\allowbreak{}<k>}. Seen as \texttt{hh\_\allowbreak{}sex\_\allowbreak{}<k>}. & 2 \\
+    \texttt{hh\_\allowbreak{}extra} & \texttt{hh\_\allowbreak{}member\_\allowbreak{}id} & id & Identifier of the household members, if they are individually identifiable. & 2 \\
+    \texttt{hh\_\allowbreak{}extra} & \texttt{hh\_\allowbreak{}size\_\allowbreak{}0\_\allowbreak{}17}, \texttt{hh\_\allowbreak{}size\_\allowbreak{}65plus} & integer & Number of household members in an age group; use letters, digits and underscores only (not \texttt{hh\_\allowbreak{}size\_\allowbreak{}0-17} or \texttt{hh\_\allowbreak{}size\_\allowbreak{}65+}). & 3 \\
+    \texttt{hh\_\allowbreak{}extra} & dwelling items & boolean & Living conditions, mainly in low-resource settings: \texttt{hh\_\allowbreak{}electricity}, \texttt{hh\_\allowbreak{}radio}, \texttt{hh\_\allowbreak{}television}, \texttt{hh\_\allowbreak{}refrigerator}, \texttt{hh\_\allowbreak{}access\_\allowbreak{}to\_\allowbreak{}water}, \texttt{hh\_\allowbreak{}shared\_\allowbreak{}toilet}. & 1 \\
+    \midrule
+    \texttt{contact\_\allowbreak{}extra} & \texttt{cnt\_\allowbreak{}id} & id & Key column, identical to \texttt{cnt\_\allowbreak{}id} in the contact common file (older records use \texttt{cont\_\allowbreak{}id}). & 42 \\
+    \texttt{contact\_\allowbreak{}extra} & \texttt{cnt\_\allowbreak{}<place>} & boolean & Locations beyond the six common indicators: \texttt{cnt\_\allowbreak{}supermarket}, \texttt{cnt\_\allowbreak{}shop}, \texttt{cnt\_\allowbreak{}worship}, \texttt{cnt\_\allowbreak{}other\_\allowbreak{}house}, \texttt{cnt\_\allowbreak{}outside\_\allowbreak{}other}, \texttt{cnt\_\allowbreak{}kindergarten}, \texttt{cnt\_\allowbreak{}public\_\allowbreak{}market}, \texttt{cnt\_\allowbreak{}sport}, \texttt{cnt\_\allowbreak{}bar\_\allowbreak{}rest}, \texttt{cnt\_\allowbreak{}health\_\allowbreak{}facility}. The six common indicators must still be filled, and the dictionary states how these places map onto them (an unmapped place is \texttt{cnt\_\allowbreak{}otherplace}). & 27 \\
+    \texttt{contact\_\allowbreak{}extra} & \texttt{cnt\_\allowbreak{}gender\_\allowbreak{}all}, \texttt{cnt\_\allowbreak{}frequency\_\allowbreak{}all} & code & The original answer categories (e.g.\ including ``don't know'', ``prefer not to say'', ``never met before''), next to the harmonised \texttt{cnt\_\allowbreak{}gender} and \texttt{frequency\_\allowbreak{}multi} of the common file. Seen as \texttt{frequency\_\allowbreak{}multi\_\allowbreak{}all}. & 22 \\
+    \texttt{contact\_\allowbreak{}extra} & \texttt{cnt\_\allowbreak{}relationship} & code & Relationship to the participant (household member, other relative, friend, colleague or schoolmate, other). Seen as \texttt{contact\_\allowbreak{}relationship}, \texttt{relationship}, \texttt{cnt\_\allowbreak{}role}. & 7 \\
+    \texttt{contact\_\allowbreak{}extra} & \texttt{cnt\_\allowbreak{}prec\_\allowbreak{}mask}, \texttt{cnt\_\allowbreak{}prec\_\allowbreak{}distance} & boolean & Precautions during the contact: face mask worn, distance kept (seen as \texttt{is\_\allowbreak{}facemask}, \texttt{cnt\_\allowbreak{}prec\_\allowbreak{}1\_\allowbreak{}and\_\allowbreak{}half\_\allowbreak{}m\_\allowbreak{}plus}). & 2 \\
+    \texttt{contact\_\allowbreak{}extra} & \texttt{cnt\_\allowbreak{}imputed}, \texttt{cnt\_\allowbreak{}individually\_\allowbreak{}reported} & boolean & Contact was imputed or aggregated rather than reported individually; seen as \texttt{is\_\allowbreak{}imputed}, \texttt{individually\_\allowbreak{}reported}. & 3 \\
+\end{longtable}
+}
 
 \end{document}
