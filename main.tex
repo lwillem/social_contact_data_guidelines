@@ -195,7 +195,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     \texttt{part\_id} & string / integer & unique identifier & Primary key; unique within the submission. \\
     \texttt{hh\_id} & string / integer & household identifier & Foreign key to the household common file; must not be \texttt{NA}. If no household information was collected, use \texttt{hh\_id = part\_id}. \\
     \texttt{part\_age\_exact} &  integer & years &
-    Exact age in completed years (fractional ages are allowed as numeric values, e.g.\ for infants). Use \texttt{NA} if not collected. \\
+    Exact age in completed years, as a whole number (no decimals; children under one year are coded \texttt{0}). Use \texttt{NA} if not collected. \\
     \texttt{part\_age\_est\_min} &
     integer &
     years &
@@ -212,7 +212,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     \end{table}
 
     \noindent\textbf{Age encoding rules:} \\
-    Participant age must be provided using one of the following approaches:
+    All ages and age bounds, for participants and contacts, are expressed in completed years as whole numbers (integers, no decimals). Participant age must be provided using one of the following approaches:
     \begin{itemize}
         \item     If exact age in completed years is known, it should be recorded in \texttt{part\_age\_exact} and both \texttt{part\_age\_est\_min} and \texttt{part\_age\_est\_max} must be set to \texttt{NA}.
         \item If age is reported as a range or estimated interval, the lower and upper bounds must be recorded in \texttt{part\_age\_est\_min} and \texttt{part\_age\_est\_max}, respectively, and \texttt{part\_age\_exact} must be set to \texttt{NA}.
