@@ -546,7 +546,7 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \texttt{R27} & error & Privacy: the public files contain no postal codes, addresses, coordinates, municipality or NIS codes; only region and province are allowed. Values that look like postal codes or coordinates in other columns are a warning. \\
 \texttt{R34} & error & No \texttt{.csv} files that socialmixr would merge unintentionally, and at most one \texttt{.json} file. \\
 \texttt{R35} & error & Merge simulation: loading the record in socialmixr keeps the number of rows and gives no merge warnings. \\
-\texttt{R36} & error & Zenodo record metadata (optional, needs a network connection). \\
+\texttt{R36} & error & Zenodo metadata: title without version or NAMETAG, creators as \texttt{Family name, Given names}, year, version such as \texttt{v1.0}, DOI and, for a full record, resource type, description, community, open licence and access. A local folder has no Zenodo metadata and gives no finding. The rule runs on the \texttt{NAMETAG\_reference.json} of a folder downloaded with \texttt{contactsurveys}, and on a published record through the optional function \texttt{check\_zenodo\_record()} (DOI or record number; needs a network connection). \\
 \texttt{R38} & error & An identifier has the same type (integer or string) in every file. \\
 \texttt{R39} & error & Further values that silently change results, e.g.\ \texttt{diary\_weight} is numeric without \texttt{NA}. \\
 \texttt{R40} & error & One spelling of the contact identifier (\texttt{cnt\_id}, or the legacy \texttt{cont\_id}) in all files of a record. \\
@@ -607,7 +607,7 @@ The public record contains no direct personal identifiers and no postal codes, a
 
 \medskip
 \noindent \textbf{Verification before submission} \\
-When the record is published, run \texttt{contactsurveys::get\_citation()} with the DOI of the record and check that the authors, the title, the year, the version and the DOI are as intended, and that \texttt{contactsurveys::download\_survey()} retrieves all files of the record. An automatic check of these metadata is planned in the checker (rule \texttt{R36}); until then the point is on the manual review list (Section~\ref{sec:checker}).
+When the record is published, run \texttt{contactsurveys::get\_citation()} with the DOI of the record and check that the authors, the title, the year, the version and the DOI are as intended, and that \texttt{contactsurveys::download\_survey()} retrieves all files of the record. The checker can also test these metadata (rule \texttt{R36}): run \texttt{contactdataformat::check\_zenodo\_record("10.5281/zenodo.<number>")} with the DOI of the record (it needs a network connection and is not part of \texttt{check\_contact\_data()}, because a local folder has no Zenodo metadata). The point also stays on the manual review list (Section~\ref{sec:checker}).
 
 \section{Submission workflow}
 \label{sec:workflow}
