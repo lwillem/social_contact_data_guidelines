@@ -330,7 +330,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     Surveys that use other categories keep their own codes, and must document the codes and, where possible, an explicit mapping to the scheme above in the dictionary file.
 
     \item \textbf{Household common file} (file name: \texttt{NAMETAG\_hh\_common.csv}) \\
-    The household common file contains core household-level information. Exactly one record must be provided per household. Because \texttt{country} is only stored in this file, every participant must link to a household record; if no household information was collected, one record per participant is provided with \texttt{hh\_id = part\_id}.
+    The household common file contains core household-level information. Exactly one record must be provided per household. Because \texttt{country} is only stored in this file, every participant must link to a household record; if no household information was collected, one record per participant is provided with \texttt{hh\_id = part\_id}, and the dictionary file must state that \texttt{hh\_id} was set equal to \texttt{part\_id}.
 
     \begin{table}[H]
         \centering
@@ -343,8 +343,8 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
         \texttt{hh\_id} &
         string / integer &
         unique identifier &
-        Primary key. Must be unique within the survey submission. \\
-        
+        Primary key. Must be unique within the survey submission and must not be \texttt{NA}. \\
+
         \texttt{country} &
         string &
         ISO alpha-2 code &
@@ -353,7 +353,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
         \texttt{hh\_size} &
         integer &
         count &
-        Household size; use \texttt{NA} if not collected. \\
+        Household size; use \texttt{NA} if not collected (also when \texttt{hh\_id = part\_id} was used because no household information exists). \\
         
         \bottomrule
         \end{tabularx}
@@ -424,7 +424,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
 \end{enumerate}
 
 \noindent \textbf{Commonly missed step: mandatory empty columns} \\
-All variables listed in Section~\ref{sec:file_spesifications} must be present as columns, even if no data were collected. In such cases, columns must be included and filled with NA. Deleting unused columns will break compatibility with the socialmixr import standard.
+All variables listed in Section~\ref{sec:file_spesifications} must be present as columns, even if no data were collected. In such cases, columns must be included and filled with NA, with the exception of the identifier columns (\texttt{part\_id}, \texttt{hh\_id}, \texttt{cnt\_id}), which must never be \texttt{NA}. Deleting unused columns will break compatibility with the socialmixr import standard.
 
 \section{Longitudinal and panel studies}
 \label{sec:longitudinal}
