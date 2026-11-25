@@ -45,14 +45,11 @@ The key words ``must'', ``must not'', ``should'' and ``may'' in this document ar
 \section{Identifiers and naming conventions}
 \subsection{Study identifier (NAMETAG)}
 \label{sec:nametag}
-Each social contact survey included in the repository is assigned a unique \texttt{NAMETAG} for identification purposes. The \texttt{NAMETAG} has the following structure:
+Each social contact survey included in the repository is assigned a unique \texttt{NAMETAG} for identification purposes. We recommend that the \texttt{NAMETAG} has the following structure:
 \[
-\texttt{NAMETAG} = \texttt{NAME\_YEAR\_COUNTRY[\_SUFFIX]}
+\texttt{NAMETAG} = \texttt{NAME\_YEAR[\_SUFFIX]}
 \]
-where \texttt{NAME} corresponds to the surname of the first author of the earliest publication presenting the dataset (preferably), or the surname of the lead investigator if there is no publication yet, \texttt{YEAR} to the year of that publication (preferably), or the year in which data collection started if there is no publication yet, and \texttt{COUNTRY} to the English name of the country in which the survey data were collected. The components appear in exactly this order. The \texttt{NAMETAG} is fixed when the record is created and is not changed when a publication appears later. If data were collected in multiple countries, the dataset must be split by country and assigned one \texttt{NAMETAG} per country.
-Records published before this rule existed may keep their original prefix, provided it is documented in the Zenodo description.
-The optional \texttt{SUFFIX} (survey acronym, design or wave, e.g.\ \texttt{PLATO}, \texttt{HH} or \texttt{WAVE01}) must be added when several surveys would otherwise get the same \texttt{NAME\_YEAR\_COUNTRY}, so that every \texttt{NAMETAG} is unique.
-All components are written in ASCII upper case, without diacritics, spaces or hyphens, and are separated by underscores.
+where \texttt{NAME} corresponds to the surname of the first author of the earliest publication presenting the dataset (preferably), or the study name (if any), or for example the surname of the lead investigator if there is no publication yet, \texttt{YEAR} to the year of that publication (preferably), or the year in which data collection started if there is no publication yet. The optional \texttt{SUFFIX} (the English name of the country in which the survey data were collected, a design or wave, e.g.\ \texttt{PLATO}, or \texttt{HOUSEHOLD}) must be added when several surveys would otherwise get the same \texttt{NAME\_YEAR}, so that every \texttt{NAMETAG} is unique. All components are written in ASCII upper case, without diacritics, spaces or hyphens, and are separated by underscores. Records published before this recommendation existed may keep their original prefix, provided it is documented in the Zenodo description, as long as all files use the same \texttt{NAMETAG} to start each file name.
 
 \medskip
 \noindent\textbf{Example:}
@@ -60,7 +57,7 @@ For a social contact survey conducted in Belgium and published by Doe et al.\ in
 \[
 \texttt{DOE\_2012\_BELGIUM}.
 \]
-If the same authors published a second, separate survey in Belgium in the same year (e.g.\ a household survey), a suffix distinguishes the two, for example \texttt{DOE\_2012\_BELGIUM\_HH}.
+If the same authors published a second, separate survey in Belgium in the same year (e.g.\ a household survey), a suffix distinguishes the two, for example \texttt{DOE\_2012\_BELGIUM\_HOUSEHOLD}.
 
 \medskip
 \noindent
@@ -72,7 +69,7 @@ Each identifier has a unique and well-defined role and must be used consistently
 
 \begin{itemize}
     \item \texttt{part\_id}: identifies a single unique identifier for the respondent's entry. This ID must be unique across the entire submission.
-    \item \texttt{sday\_id}: identifies the calendar date associated with a given \texttt{part\_id} (the date on which the diary or questionnaire was filled in), in ISO 8601 format (\texttt{YYYY-MM-DD}).
+    \item \texttt{sday\_id}: identifies the calendar date associated with a given \texttt{part\_id} (the date on which the diary or questionnaire was filled in), in \texttt{YYYYMMDD} format (e.g.\ \texttt{20101111}).
     \item \texttt{cnt\_id}: identifies a single contact event. Earlier datasets (e.g.\ \texttt{socialmixr::polymod}) use the spelling \texttt{cont\_id}; this column is only the key that links the contact common and extra files, so either spelling can still be read as long as it is identical in every file of a record, but new submissions must use \texttt{cnt\_id}.
     \item \texttt{hh\_id}: identifies a household. Every participant must have a non-missing \texttt{hh\_id}; if no household information was collected, use \texttt{hh\_id = part\_id} (a one-person household).
     \item \texttt{panel\_id}: identifies the same underlying individual across multiple survey rounds or waves (optional).
@@ -82,7 +79,6 @@ Each identifier has a unique and well-defined role and must be used consistently
 
 \subsection{Missing values}
 All missing or not-collected values must be encoded as \texttt{NA}, which is the only accepted missing-value token. Empty cells, whitespace, placeholder values (e.g.\ \texttt{-99}, \texttt{999}), or empty strings must not be used. The missing value encoding must be used consistently across all files and variables, regardless of data type.
-Note that \texttt{NA} is also the ISO 3166-1 alpha-2 code of Namibia: country codes should be quoted, and software must be told explicitly which token denotes a missing value (e.g.\ \texttt{na = "NA"} when writing with \texttt{data.table::fwrite()}).
 
 \subsection{File encoding and data types}
 \label{sec:encoding}
@@ -97,7 +93,7 @@ All data files must be plain text files with the following properties:
 \noindent \textbf{Boolean variables} are coded \texttt{TRUE} or \texttt{FALSE} (upper case, unquoted); missing values are \texttt{NA}. Other codings (\texttt{0/1}, \texttt{1/2}, \texttt{Y/N}, \texttt{T/F}, yes/no) are not allowed. Existing datasets that use \texttt{0/1} can still be read by the \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr} package, but they do not follow this format and should be converted when they are updated.
 All columns typed as \emph{boolean} in the tables below follow this rule.
 
-\noindent \textbf{Dates} are always written in ISO 8601 format \texttt{YYYY-MM-DD} (e.g.\ \texttt{2010-11-11}), in every file of the record; no other date format (\texttt{YYYYMMDD}, \texttt{DD/MM/YYYY}, spreadsheet serial numbers) is allowed. Missing dates are \texttt{NA}. Existing datasets that store \texttt{sday\_id} as \texttt{YYYYMMDD} (e.g.\ \texttt{socialmixr::polymod}) should be converted when they are updated.
+\noindent \textbf{Dates} are always written in \texttt{YYYYMMDD} format in every file of the record; no other date format (\texttt{YYYY-MM-DD}, \texttt{DD/MM/YYYY}, spreadsheet serial numbers) is allowed. Missing dates are \texttt{NA}. 
 
 \section{General formatting rules}
 \noindent Each survey should be organised as a set of relational datasets, with one file per data entity. To ensure consistency across submissions, the following files are required:
@@ -153,7 +149,7 @@ All columns typed as \emph{boolean} in the tables below follow this rule.
 \noindent The common files are used for harmonisation and standard analyses, whereas the extra files preserve additional information specific to the original survey. 
 The \textbf{common} and \textbf{extra} files for a given data entity can be merged using the primary key. 
 The extra file must contain only variables that are not included in the corresponding common file; variables defined in the common file must not be duplicated. 
-The name of each file must start with the corresponding \texttt{NAMETAG}.
+The name of each file must start with the corresponding \texttt{NAMETAG}, and all files of a record must carry the same \texttt{NAMETAG}; a file with another prefix makes the record non-compliant. Further \texttt{.csv} files that are not part of the file set described in this document may be added if their file name starts with the \texttt{NAMETAG} (e.g.\ \texttt{NAMETAG\_timeuse.csv} or \texttt{NAMETAG\_participants\_location.csv}); they should not share column names with the common files, because software such as socialmixr merges every \texttt{.csv} file of a record that shares a column name. A \texttt{.csv} file without the \texttt{NAMETAG} prefix must not be part of the record.
 
 \section{File specifications} 
 \label{sec:file_spesifications}
@@ -353,7 +349,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
         \texttt{country} &
         string &
         ISO alpha-2 code &
-        Country in which the survey data were collected, encoded using ISO 3166-1 alpha-2 (e.g.\ \texttt{BE} for Belgium, and \texttt{FR} for France). \\
+        Country in which the survey data were collected, encoded using ISO 3166-1 alpha-2 (e.g.\ \texttt{BE} for Belgium, and \texttt{FR} for France). Namibia may be written as the ISO alpha-3 code \texttt{NAM}, because its alpha-2 code \texttt{NA} is read as a missing value by much software; if \texttt{NA} is used, it must be quoted and software must be told explicitly which token denotes a missing value (e.g.\ \texttt{na = "NA"} when writing with \texttt{data.table::fwrite()}). \\
 
         \texttt{hh\_size} &
         integer &
@@ -382,7 +378,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
 
     \texttt{sday\_id} &
     string &
-    \texttt{YYYY-MM-DD} &
+    \texttt{YYYYMMDD} &
     Survey date identifier: the date on which the diary or questionnaire was filled in; a value column (not a key), which is not unique because several participants can share the same date. Use \texttt{NA} if the date is unknown. \\
     
     \texttt{day} &
@@ -410,11 +406,16 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     \texttt{TRUE/FALSE} &
     \texttt{TRUE} if \texttt{sday\_id} is a public holiday and/or a school holiday that applies to the participant's area, \texttt{FALSE} otherwise; \texttt{NA} if the date is unknown. \\
 
+    \texttt{wave} (optional, recommended) &
+    string / integer &
+    wave or round &
+    Wave or round of the record (e.g.\ \texttt{1}, \texttt{2}, \texttt{W1}); \texttt{NA} if not applicable. One \texttt{part\_id} is one person in one wave on one diary day. \\
+
     \bottomrule
     \end{tabularx}
     \end{table}
 
-    \noindent The columns \texttt{day}, \texttt{month}, \texttt{year} and \texttt{dayofweek} must be consistent with \texttt{sday\_id}. The column \texttt{holiday} is recommended but not obligatory; it may be omitted entirely. If it is provided, the dictionary file must state the calendars used (region, school year, source) and the dates counted as holiday.
+    \noindent The columns \texttt{day}, \texttt{month}, \texttt{year} and \texttt{dayofweek} must be consistent with \texttt{sday\_id}. The column \texttt{holiday} is recommended but not obligatory; it may be omitted entirely. If it is provided, the dictionary file must state the calendars used (region, school year, source) and the dates counted as holiday. The column \texttt{wave} is recommended for panel and repeated studies; if it is provided, the dictionary file must state what a wave is (a fixed round of the same panel, a repeated multi-day measurement or a recruitment batch) and how \texttt{wave} relates to \texttt{panel\_id}.
 
     \item \textbf{Dictionary file} (file name: \texttt{NAMETAG\_dictionary.xlsx} or \texttt{NAMETAG\_dictionary.xls})
 
@@ -428,6 +429,8 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     
     \noindent The dictionary must be organised by file.
     The dictionary in the public record is a spreadsheet (\texttt{.xlsx} or \texttt{.xls}) following the Zenodo dictionary template, with one sheet per data file and no stray spaces in variable names. A \texttt{.csv} dictionary may be used locally but must not be part of the published record, because software such as socialmixr tries to merge every \texttt{.csv} file of a record.
+
+    \noindent\textit{Note:} the spreadsheet format is chosen for the current version because it is readable by people and by software. Other formats that are both human- and machine-readable may be considered in future versions of these guidelines.
 
     \item \textbf{Extra files} (file name: \texttt{NAMETAG\_xxx\_extra.csv}) \\
     The \textbf{extra} files contain survey-specific variables that are not included in the corresponding \textbf{common} file. For each data entity, the common and extra files must share the same primary key, which ensures a one-to-one match between records across data tables.
@@ -491,6 +494,76 @@ The \texttt{panel\_id} is not included in the participant common file and, when 
 \caption{Schematic representation of participant identifiers in longitudinal studies.}
 \end{figure}
 
+\section{Automated checking}
+\label{sec:checker}
+The rules in this document are implemented in the R package \texttt{contactdataformat}, developed by the SOCRATES team. The function \texttt{check\_contact\_data()} reads a folder with the files of one record, checks it against the rules below and writes a report; it never changes the data. Each finding in the report has a rule number, a severity, the file and column concerned, the number of rows that fail and example row numbers. The report states \texttt{PASS} when there is no error and \texttt{FAIL} otherwise. The package will be made publicly available soon. Running the checker and resolving its findings is the responsibility of the owner of the repository (Zenodo record), before the record is submitted (Section~\ref{sec:workflow}).
+
+\medskip
+\noindent The severity of a finding indicates how it must be handled:
+\begin{itemize}
+    \item \textbf{error}: the record breaks a requirement of this document, or software such as \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr} would read it incorrectly or not at all; errors must be fixed before submission;
+    \item \textbf{warning}: a recommended convention is not followed, or a value looks implausible (e.g.\ the legacy \texttt{0/1} coding of booleans); warnings should be reviewed and are accepted for a documented reason;
+    \item \textbf{note}: information or a matter of style, for example a \texttt{NAMETAG} that does not follow the recommended form;
+    \item \textbf{manual}: a point that cannot be checked automatically and must be reviewed by a person (see below).
+\end{itemize}
+Existing records that cannot meet a rule may waive it in the checker, with a reason that is documented in the report.
+
+\medskip
+\noindent The automated checks are listed below with their default severity (a finding of another severity is mentioned where a rule has more than one).
+
+{\small
+\begin{longtable}{p{1.1cm} p{1.7cm} p{11.9cm}}
+\toprule
+\textbf{Rule} & \textbf{Severity} & \textbf{Check} \\
+\midrule
+\endhead
+\texttt{R01} & error & All required files are present and each file name starts with the \texttt{NAMETAG}; several prefixes in one record are an error. A \texttt{.csv} file that is not part of the file set is an error if its name does not start with the \texttt{NAMETAG}, and a warning otherwise. A dictionary that is not an \texttt{.xlsx} or \texttt{.xls} file is an error. \\
+\texttt{R02} & note & The \texttt{NAMETAG} deviates from the recommended form \texttt{NAME\_YEAR[\_SUFFIX]} (note); error only if it cannot serve as a file name prefix (ASCII letters and digits, separated by underscores or hyphens). \\
+\texttt{R04} & error & CSV format: UTF-8 without byte-order mark, comma delimiter, one header row, no row names, no duplicated column names, no empty cells. \\
+\texttt{R05} & error & The common files have the specified columns and no others (optional columns may be absent; the column order is not checked). \\
+\texttt{R06} & error & Each extra file has the same keys as its common file and does not duplicate its columns; a column shared with another file is a warning. \\
+\texttt{R07} & error & Missing values are \texttt{NA} only; placeholder codes such as \texttt{-99} or \texttt{999} are a warning. \\
+\texttt{R08} & error & Column types (integer, numeric, string, boolean \texttt{TRUE}/\texttt{FALSE}); the coding \texttt{0/1} for booleans is a warning. \\
+\texttt{R09} & error & Allowed values (e.g.\ gender, ISO alpha-2 country code) and value ranges. \\
+\texttt{R10} & error & Age rules: exact age or an interval but not both, lower bound not above upper bound, whole numbers within the allowed range. \\
+\texttt{R11} & warning & Plausibility of the share of missing ages. \\
+\texttt{R12} & error & \texttt{sday\_id} is a valid calendar date in \texttt{YYYYMMDD}; \texttt{day}, \texttt{month} and \texttt{year} match it; a \texttt{dayofweek} that does not match it is a warning. \\
+\texttt{R13} & error & Location indicators: a contact has at least one location \texttt{TRUE}, or all six are \texttt{NA}. \\
+\texttt{R14} & error & Category codes in the data are covered by the dictionary (a code scheme that differs from the recommended one is a note). \\
+\texttt{R15} & error & The dictionary documents every column with the required fields (a documented column that does not exist is a warning). \\
+\texttt{R16} & error & Primary keys are unique and never \texttt{NA}. \\
+\texttt{R17} & error & Foreign keys refer to existing records in the other files. \\
+\texttt{R18} & error & Every participant has a survey day row; participants without contacts are kept (note). \\
+\texttt{R19} & warning & The household size is not smaller than the number of participants of that household. \\
+\texttt{R20}, \texttt{R41} & warning, error & Panel identifiers: the same \texttt{panel\_id} does not have several \texttt{part\_id} records on the same survey day (warning); a \texttt{part\_id} belongs to one \texttt{panel\_id} only, in every file (error). \\
+\texttt{R21} & warning & Plausibility of the number of contacts: participants with more than 100 contacts, or a large share of participants without contacts (check for aggregated or imputed contacts). \\
+\texttt{R22} & error & Smoke test: the record can be loaded with socialmixr and a contact matrix can be computed. \\
+\texttt{R23} & warning & If the contact extra file has the column \texttt{cnt\_imputed} (imputed or aggregated contacts), it is \texttt{TRUE}, \texttt{FALSE} or \texttt{NA}. \\
+\texttt{R26} & warning & No column names that look like personal identifiers (e.g.\ names, e-mail, phone). \\
+\texttt{R27} & error & Privacy: the public files contain no postal codes, addresses, coordinates, municipality or NIS codes; only region and province are allowed. \\
+\texttt{R34} & error & No \texttt{.csv} files that socialmixr would merge unintentionally, and at most one \texttt{.json} file. \\
+\texttt{R35} & error & Merge simulation: loading the record in socialmixr keeps the number of rows and gives no merge warnings. \\
+\texttt{R36} & error & Zenodo record metadata (optional, needs a network connection). \\
+\texttt{R38} & error & An identifier has the same type (integer or string) in every file. \\
+\texttt{R39} & error & Further values that silently change results, e.g.\ \texttt{diary\_weight} is numeric without \texttt{NA}. \\
+\texttt{R40} & error & One spelling of the contact identifier (\texttt{cnt\_id}, or the legacy \texttt{cont\_id}) in all files of a record. \\
+\texttt{R28}--\texttt{R33} & error / warning & Checks on the restricted geography file that is kept outside the published record: one row per \texttt{part\_id}, ZIP format, consistency of ZIP, municipality and region. \\
+\bottomrule
+\end{longtable}
+}
+
+\noindent \textbf{Manual review.} The checker lists the following points for review by a person; they concern the content of the dictionary and of the Zenodo record rather than the data files:
+\begin{itemize}
+    \item the \texttt{NAMETAG} is built from the first author, the year and, where needed, a suffix, and is unique per survey implementation;
+    \item locations beyond the six common ones (e.g.\ kindergarten, daycare, family visit) are mapped as documented and kept in the contact extra file;
+    \item the age-interval convention (lower bound inclusive, upper bound exclusive) is documented in the dictionary;
+    \item \texttt{sday\_id} is the date on which the diary or questionnaire was filled in;
+    \item proxy-reported participants and imputed contacts are coded as documented;
+    \item the definition of \texttt{holiday} (public and/or school holiday, region or community, calendar source) is documented;
+    \item the dictionary states what a wave is and how \texttt{wave} relates to \texttt{panel\_id};
+    \item the Zenodo title, description, dates and geographic scope are consistent with the data files.
+\end{itemize}
+
 \section{Zenodo submission and metadata requirements}
 
 SOCRATES-formatted datasets are disseminated via \href{https://zenodo.org}{Zenodo} to support long-term archiving, versioning, and reuse. 
@@ -507,10 +580,12 @@ Contributors are encouraged to include keywords such as \texttt{social contacts}
 \noindent Note that each dataset corresponds to a single survey implementation. If multiple surveys are conducted within the same country and year, they must be submitted as separate datasets, each with its own Zenodo record and a unique \texttt{NAMETAG} (using the optional \texttt{SUFFIX}, see Section~\ref{sec:nametag}). For surveys that cover only part of a country (e.g.\ a region), the region should be stated in the Zenodo description. The information provided in the Zenodo (title, description, dates, and geographic scope) must be consistent with the contents of the submitted data files. 
 
 \section{Submission workflow}
+\label{sec:workflow}
 
 To make a dataset available through \href{https://socialcontactdata.org}{socialcontactdata.org}, contributors must complete the following steps:
 \begin{enumerate}
     \item Format the dataset according to the SOCRATES data formatting guidelines described in this document.
+    \item Run the checker (Section~\ref{sec:checker}) on the formatted dataset, resolve all errors, and review the warnings and the manual review points; this is the responsibility of the owner of the repository (Zenodo record).
     \item Upload the formatted dataset and accompanying documentation to \href{https://zenodo.org}{Zenodo}.
     \item Contact the \href{https://socialcontactdata.org}{socialcontactdata.org} team to request that the Zenodo record be linked and indexed on the platform.
 \end{enumerate}
