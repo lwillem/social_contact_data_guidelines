@@ -78,7 +78,7 @@ Each identifier has a unique and well-defined role and must be used consistently
 \noindent \textbf{Note:} all variable names defined in this guideline are case-sensitive and must match their definitions exactly. For example, \texttt{part\_id} must not be renamed to \texttt{Part\_ID}, \texttt{participant\_id}, or \texttt{partID}. Deviations will prevent correct parsing by the \href{https://lwillem.shinyapps.io/socrates_rshiny/}{SOCRATES} and \href{https://cran.r-project.org/web/packages/socialmixr/vignettes/socialmixr.html}{socialmixr} compatible tools.
 
 \subsection{Missing values}
-All missing or not-collected values must be encoded as \texttt{NA}, which is the only accepted missing-value token. Empty cells, whitespace, placeholder values (e.g.\ \texttt{-99}, \texttt{999}), or empty strings must not be used. The missing value encoding must be used consistently across all files and variables, regardless of data type.
+All missing or not-collected values must be encoded as \texttt{NA}, which is the only accepted missing-value token. Empty cells, whitespace, placeholder values (e.g.\ \texttt{-99}, \texttt{999}), or empty strings must not be used; text such as \texttt{unknown}, \texttt{missing} or \texttt{null} (in any case) is not a missing-value token either. The missing value encoding must be used consistently across all files and variables, regardless of data type.
 
 \subsection{File encoding and data types}
 \label{sec:encoding}
@@ -149,7 +149,7 @@ All columns typed as \emph{boolean} in the tables below follow this rule.
 \noindent The common files are used for harmonisation and standard analyses, whereas the extra files preserve additional information specific to the original survey. 
 The \textbf{common} and \textbf{extra} files for a given data entity can be merged using the primary key. 
 The extra file must contain only variables that are not included in the corresponding common file; variables defined in the common file must not be duplicated. 
-The name of each file must start with the corresponding \texttt{NAMETAG}, and all files of a record must carry the same \texttt{NAMETAG}; a file with another prefix makes the record non-compliant. Further \texttt{.csv} files that are not part of the file set described in this document may be added if their file name starts with the \texttt{NAMETAG} (e.g.\ \texttt{NAMETAG\_timeuse.csv} or \texttt{NAMETAG\_participants\_location.csv}); they should not share column names with the common files, because software such as socialmixr merges every \texttt{.csv} file of a record that shares a column name. A \texttt{.csv} file without the \texttt{NAMETAG} prefix must not be part of the record.
+The name of each file must start with the corresponding \texttt{NAMETAG}, and all files of a record must carry the same \texttt{NAMETAG}; a file with another prefix makes the record non-compliant. Further \texttt{.csv} files that are not part of the file set described in this document may be added if their file name starts with the \texttt{NAMETAG} (e.g.\ \texttt{NAMETAG\_timeuse.csv} or \texttt{NAMETAG\_participants\_location.csv}); note that all \texttt{.csv} files with a shared column name will be merged with the main files. A \texttt{.csv} file without the \texttt{NAMETAG} prefix must not be part of the record.
 
 \section{File specifications} 
 \label{sec:file_spesifications}
@@ -217,7 +217,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}, and al
     \end{itemize}
     Age information must not be provided redundantly across these fields.
 
-    \noindent\textbf{Interval convention:} the lower bound of an age interval is inclusive and the upper bound is exclusive (e.g.\ the category 40--45 covers ages 40 up to, but not including, 45). The bounds are recorded as the category limits used in the questionnaire (\texttt{est\_min = 40}, \texttt{est\_max = 45}), and the dictionary file must state this convention. Note that some software (e.g.\ \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr}) treats both bounds as inclusive. The same convention applies to \texttt{cnt\_age\_est\_min} and \texttt{cnt\_age\_est\_max}.
+    \noindent\textbf{Interval convention:} the lower bound of an age interval is inclusive and the upper bound is exclusive (e.g.\ the category 40--45 covers ages 40 up to, but not including, 45). The bounds are recorded as the category limits used in the questionnaire (\texttt{est\_min = 40}, \texttt{est\_max = 45}), and the dictionary file must state this convention. Note that some software (e.g.\ \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr}) treats both bounds as inclusive. The same convention applies to \texttt{cnt\_age\_est\_min} and \texttt{cnt\_age\_est\_max}. Because the upper bound is exclusive, an interval with equal bounds (e.g.\ 40--40) is empty: give a single age in the exact-age column, or the next category limit as upper bound.
     
     \item \textbf{Contacts common file} (file name: \texttt{NAMETAG\_contact\_common.csv})\\
     The contacts common file contains contact-level information. Each record corresponds to one contact reported by one participant on one survey day. Contacts that were imputed or aggregated (i.e.\ not individually reported by the participant) must be identified as such in the contacts extra file. Multiple location indicators may be \texttt{TRUE} for a single contact if applicable.
@@ -354,7 +354,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}, and al
         \texttt{hh\_size} &
         integer &
         count &
-        Household size; use \texttt{NA} if not collected (also when \texttt{hh\_id = part\_id} was used because no household information exists). \\
+        Household size; use \texttt{NA} if not collected (also when \texttt{hh\_id = part\_id} was used because no household information exists). Values above 20 are reported as implausible; check them for data entry errors and keep institutional households out of this column. \\
         
         \bottomrule
         \end{tabularx}
@@ -379,7 +379,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}, and al
     \texttt{sday\_id} &
     string &
     \texttt{YYYYMMDD} &
-    Survey date identifier: the date on which the diary or questionnaire was filled in; a value column (not a key), which is not unique because several participants can share the same date. Use \texttt{NA} if the date is unknown. \\
+    Survey date identifier: the date on which the diary or questionnaire was filled in; a value column (not a key), which is not unique because several participants can share the same date. Use \texttt{NA} if the date is unknown; weekday and holiday analyses are not possible for those participants, so the checker reports a share of more than 5\% without a date. \\
     
     \texttt{day} &
     integer &
@@ -442,7 +442,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}, and al
 \end{enumerate}
 
 \noindent \textbf{Commonly missed step: mandatory empty columns} \\
-All variables listed in Section~\ref{sec:file_spesifications} must be present as columns, even if no data were collected. In such cases, columns must be included and filled with NA, with the exception of the identifier columns (\texttt{part\_id}, \texttt{hh\_id}, \texttt{cnt\_id}), which must never be \texttt{NA}. A uniform set of columns makes submissions comparable and allows them to be checked automatically. (Some software, such as socialmixr, can still read data without some of the empty columns, but removing them makes a submission non-compliant.) Columns marked as optional in the tables are exempt from this rule.
+All variables listed in Section~\ref{sec:file_spesifications} must be present as columns, even if no data were collected. In such cases, columns must be included and filled with NA, with the exception of the identifier columns (\texttt{part\_id}, \texttt{hh\_id}, \texttt{cnt\_id}), which must never be \texttt{NA}. A uniform set of columns makes submissions comparable and allows them to be checked automatically. (Some software, such as socialmixr, can still read data without some of the empty columns, but removing them makes a submission non-compliant.) Columns marked as optional in the tables are exempt from this rule. A column that is \texttt{NA} for all records is allowed but is listed by the checker, because it cannot be used in analyses; if all six location indicators are \texttt{NA}, no contact matrix by setting can be made from the record.
 
 \section{Longitudinal and panel studies}
 \label{sec:longitudinal}
@@ -454,7 +454,7 @@ All variables listed in Section~\ref{sec:file_spesifications} must be present as
 
 \noindent
 Records corresponding to the same individual across different survey rounds must share the same \texttt{panel\_id} but have distinct \texttt{part\_id} values. 
-The \texttt{panel\_id} is not included in the participant common file and, when available, must be provided in the participant extra file and linked using \texttt{part\_id}.
+The \texttt{panel\_id} is not included in the participant common file and, when available, must be provided in the participant extra file and linked using \texttt{part\_id}. All records of one \texttt{panel\_id} are the same person: \texttt{part\_gender} does not change between them, and an exact age follows the survey dates (it does not decrease and does not increase by more than the time between the two dates allows). The checker reports violations as warnings, as they usually point to a wrongly linked \texttt{panel\_id}.
 
 \begin{figure}[H]
 \centering
@@ -517,15 +517,15 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \textbf{Rule} & \textbf{Severity} & \textbf{Check} \\
 \midrule
 \endhead
-\texttt{R01} & error & All required files are present and each file name starts with the \texttt{NAMETAG}; several prefixes in one record are an error. A \texttt{.csv} file that is not part of the file set is an error if its name does not start with the \texttt{NAMETAG}, and a warning otherwise. A dictionary that is not an \texttt{.xlsx} or \texttt{.xls} file is an error. \\
+\texttt{R01} & error & All required files are present and each file name starts with the \texttt{NAMETAG}; several prefixes in one record are an error. A \texttt{.csv} file that is not part of the file set is an error if its name does not start with the \texttt{NAMETAG}, and a warning otherwise. A dictionary that is not an \texttt{.xlsx} or \texttt{.xls} file, or that is not named \texttt{NAMETAG\_dictionary} (e.g.\ \texttt{NAMETAG\_data\_dictionary.xlsx}), is an error; a dictionary with a deviating name is still read, so that its content is checked. \\
 \texttt{R02} & note & The \texttt{NAMETAG} deviates from the recommended form \texttt{NAME\_YEAR[\_SUFFIX]} (note); error only if it cannot serve as a file name prefix (ASCII letters and digits, separated by underscores or hyphens). \\
 \texttt{R04} & error & CSV format: UTF-8 without byte-order mark, comma delimiter, one header row, no row names, no duplicated column names, no empty cells. \\
 \texttt{R05} & error & The common files have the specified columns and no others (optional columns may be absent; the column order is not checked). \\
 \texttt{R06} & error & Each extra file has the same keys as its common file and does not duplicate its columns; a column shared with another file is a warning. \\
-\texttt{R07} & error & Missing values are \texttt{NA} only; placeholder codes such as \texttt{-99} or \texttt{999} are a warning. \\
+\texttt{R07} & error & Missing values are \texttt{NA} only, also when written as text such as \texttt{unknown} or \texttt{Null} (any case); placeholder codes such as \texttt{-99} or \texttt{999} are a warning. \\
 \texttt{R08} & error & Column types (integer, numeric, string, boolean \texttt{TRUE}/\texttt{FALSE}); the coding \texttt{0/1} for booleans is a warning. \\
 \texttt{R09} & error & Allowed values (e.g.\ gender, ISO alpha-2 country code) and value ranges. \\
-\texttt{R10} & error & Age rules: exact age or an interval but not both, lower bound not above upper bound, whole numbers within the allowed range. \\
+\texttt{R10} & error & Age rules: exact age or an interval but not both, lower bound below upper bound (equal bounds give an empty interval, a warning), whole numbers within the allowed range. \\
 \texttt{R11} & warning & Plausibility of the share of missing ages. \\
 \texttt{R12} & error & \texttt{sday\_id} is a valid calendar date in \texttt{YYYYMMDD}; \texttt{day}, \texttt{month} and \texttt{year} match it; a \texttt{dayofweek} that does not match it is a warning. \\
 \texttt{R13} & error & Location indicators: a contact has at least one location \texttt{TRUE}, or all six are \texttt{NA}. \\
@@ -535,7 +535,7 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \texttt{R17} & error & Foreign keys refer to existing records in the other files. \\
 \texttt{R18} & error & Every participant has a survey day row; participants without contacts are kept (note). \\
 \texttt{R19} & warning & The household size is not smaller than the number of participants of that household. \\
-\texttt{R20}, \texttt{R41} & warning, error & Panel identifiers: the same \texttt{panel\_id} does not have several \texttt{part\_id} records on the same survey day (warning); a \texttt{part\_id} belongs to one \texttt{panel\_id} only, in every file (error). \\
+\texttt{R20}, \texttt{R41} & warning, error & Panel identifiers: the same \texttt{panel\_id} does not have several \texttt{part\_id} records on the same survey day (warning); a \texttt{part\_id} belongs to one \texttt{panel\_id} only, in every file (error). The checker also reports the number of individuals and records per individual (note). \\
 \texttt{R21} & warning & Plausibility of the number of contacts: participants with more than 100 contacts, or a large share of participants without contacts (check for aggregated or imputed contacts). \\
 \texttt{R22} & error & Smoke test: the record can be loaded with socialmixr and a contact matrix can be computed. \\
 \texttt{R23} & warning & If the contact extra file has the column \texttt{cnt\_imputed} (imputed or aggregated contacts), it is \texttt{TRUE}, \texttt{FALSE} or \texttt{NA}. \\
@@ -547,6 +547,10 @@ Existing records that cannot meet a rule may waive it in the checker, with a rea
 \texttt{R38} & error & An identifier has the same type (integer or string) in every file. \\
 \texttt{R39} & error & Further values that silently change results, e.g.\ \texttt{diary\_weight} is numeric without \texttt{NA}. \\
 \texttt{R40} & error & One spelling of the contact identifier (\texttt{cnt\_id}, or the legacy \texttt{cont\_id}) in all files of a record. \\
+\texttt{R42} & warning & Household size above 20. \\
+\texttt{R43} & note & Columns that are \texttt{NA} for all records; a warning if all six location indicators are \texttt{NA}. \\
+\texttt{R44} & warning & More than 5\% of the participants have no survey date (\texttt{sday\_id} is \texttt{NA}). \\
+\texttt{R45} & warning & One \texttt{panel\_id} has a changing \texttt{part\_gender}, or an exact age that decreases or changes by more than the time between the survey dates. \\
 \texttt{R28}--\texttt{R33} & error / warning & Checks on the restricted geography file that is kept outside the published record: one row per \texttt{part\_id}, ZIP format, consistency of ZIP, municipality and region. \\
 \bottomrule
 \end{longtable}
