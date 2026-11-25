@@ -72,7 +72,7 @@ Each identifier has a unique and well-defined role and must be used consistently
 
 \begin{itemize}
     \item \texttt{part\_id}: identifies a single unique identifier for the respondent's entry. This ID must be unique across the entire submission.
-    \item \texttt{sday\_id}: identifies the calendar date associated with a given \texttt{part\_id} (the date on which the diary or questionnaire was filled in), in \texttt{YYYYMMDD} format.
+    \item \texttt{sday\_id}: identifies the calendar date associated with a given \texttt{part\_id} (the date on which the diary or questionnaire was filled in), in ISO 8601 format (\texttt{YYYY-MM-DD}).
     \item \texttt{cnt\_id}: identifies a single contact event. Earlier datasets (e.g.\ \texttt{socialmixr::polymod}) use the spelling \texttt{cont\_id}; this column is only the key that links the contact common and extra files, so either spelling can still be read as long as it is identical in every file of a record, but new submissions must use \texttt{cnt\_id}.
     \item \texttt{hh\_id}: identifies a household. Every participant must have a non-missing \texttt{hh\_id}; if no household information was collected, use \texttt{hh\_id = part\_id} (a one-person household).
     \item \texttt{panel\_id}: identifies the same underlying individual across multiple survey rounds or waves (optional).
@@ -96,6 +96,8 @@ All data files must be plain text files with the following properties:
 \end{itemize}
 \noindent \textbf{Boolean variables} are coded \texttt{TRUE} or \texttt{FALSE} (upper case, unquoted); missing values are \texttt{NA}. Other codings (\texttt{0/1}, \texttt{1/2}, \texttt{Y/N}, \texttt{T/F}, yes/no) are not allowed. Existing datasets that use \texttt{0/1} can still be read by the \href{https://cran.r-project.org/web/packages/socialmixr/index.html}{socialmixr} package, but they do not follow this format and should be converted when they are updated.
 All columns typed as \emph{boolean} in the tables below follow this rule.
+
+\noindent \textbf{Dates} are always written in ISO 8601 format \texttt{YYYY-MM-DD} (e.g.\ \texttt{2010-11-11}), in every file of the record; no other date format (\texttt{YYYYMMDD}, \texttt{DD/MM/YYYY}, spreadsheet serial numbers) is allowed. Missing dates are \texttt{NA}. Existing datasets that store \texttt{sday\_id} as \texttt{YYYYMMDD} (e.g.\ \texttt{socialmixr::polymod}) should be converted when they are updated.
 
 \section{General formatting rules}
 \noindent Each survey should be organised as a set of relational datasets, with one file per data entity. To ensure consistency across submissions, the following files are required:
@@ -380,7 +382,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
 
     \texttt{sday\_id} &
     string &
-    \texttt{YYYYMMDD} &
+    \texttt{YYYY-MM-DD} &
     Survey date identifier: the date on which the diary or questionnaire was filled in; a value column (not a key), which is not unique because several participants can share the same date. Use \texttt{NA} if the date is unknown. \\
     
     \texttt{day} &
@@ -412,7 +414,7 @@ The name of each file must start with the corresponding \texttt{NAMETAG}.
     \end{tabularx}
     \end{table}
 
-    \noindent The columns \texttt{day}, \texttt{month}, \texttt{year} and \texttt{dayofweek} must be consistent with \texttt{sday\_id}. If a survey records a different date or day than the one on which the diary was filled in (e.g.\ an assigned diary day), that information is stored in the participant extra file. The column \texttt{holiday} is recommended but not obligatory; it may be omitted entirely. If it is provided, the dictionary file must state the calendars used (region, school year, source) and the dates counted as holiday.
+    \noindent The columns \texttt{day}, \texttt{month}, \texttt{year} and \texttt{dayofweek} must be consistent with \texttt{sday\_id}. The column \texttt{holiday} is recommended but not obligatory; it may be omitted entirely. If it is provided, the dictionary file must state the calendars used (region, school year, source) and the dates counted as holiday.
 
     \item \textbf{Dictionary file} (file name: \texttt{NAMETAG\_dictionary.xlsx} or \texttt{NAMETAG\_dictionary.xls})
 
