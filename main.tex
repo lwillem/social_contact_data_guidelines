@@ -496,7 +496,7 @@ The \texttt{panel\_id} is not included in the participant common file and, when 
 
 \section{Automated checking}
 \label{sec:checker}
-The rules in this document are implemented in the R package \texttt{contactdataformat}, developed by the SOCRATES team. The function \texttt{check\_contact\_data()} reads a folder with the files of one record, checks it against the rules below and writes a report; it never changes the data. Each finding in the report has a rule number, a severity, the file and column concerned, the number of rows that fail and example row numbers. The report states \texttt{PASS} when there is no error and \texttt{FAIL} otherwise. The package will be made publicly available soon. Running the checker and resolving its findings is the responsibility of the owner of the repository (Zenodo record), before the record is submitted (Section~\ref{sec:workflow}).
+The rules in this document are implemented in the R package \texttt{contactdataformat}, developed by the SOCRATES team. The function \texttt{check\_contact\_data()} reads a folder with the files of one record, checks it against the rules below and writes a report; it never changes the data. Each finding in the report has a rule number, a severity, the file and column concerned, the number of rows that fail and example row numbers. The report states \texttt{PASS} when there is no error and \texttt{FAIL} otherwise. The package is publicly available at \url{https://github.com/lwillem/contactdataformat}. Running the checker and resolving its findings is the responsibility of the owner of the repository (Zenodo record), before the record is submitted (Section~\ref{sec:workflow}).
 
 \medskip
 \noindent The severity of a finding indicates how it must be handled:
